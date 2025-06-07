@@ -1,0 +1,17 @@
+Für Benutzer:
+/probeabo: Einmaliges 30-Tage-Probeabo.
+
+/guthaben: Zeigt Restlaufzeit an.
+
+/redeem [code]: Löst einen Geschenkcode ein.
+
+Für Admins:
+/übersicht: Listet alle aktiven Abos mit Restlaufzeit.
+
+/addabo [monate]: Fügt Premiumzeit hinzu.
+
+Automatische:
+
+Rollenzuweisung und -entfernung
+
+Erinnerung per DM (30 / 7 / 3 Tage vor Ablauf)
