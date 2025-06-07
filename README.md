@@ -3,6 +3,12 @@
 I created a discord bot for subscriptions, i use it for jellyfin together with a modified "membarr" bot.
 Member with Subscription automatically gets a specific role, this role will cooperate with my customized membarr bot which activates and deactivates jellyfin
 
+# Working
+addabo, probeabo, übersicht, automatic roles, guthaben, timebased rolemanagement
+
+# Not tested yet
+codes, redeem
+
 # Create a Discord Bot
  1) Create the discord server that your users will get member roles or use an existing discord that you can assign roles from
  2) Log into https://discord.com/developers/applications and click 'New Application'
