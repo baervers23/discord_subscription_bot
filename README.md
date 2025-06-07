@@ -16,26 +16,32 @@ Member with Subscription automatically gets a specific role, this role will coop
 10) Copy the 'Generated URL' and paste into your browser and add it to your discord server from Step 1.
 
 # Installation
+```
 git clone https://github.com/baervers23/discord_abo_bot.git
 pip3 install -r requirements.txt 
 Change the .env file.
 python3 main.py
-
+```
 
 # .env
+```
 DISCORD_TOKEN=Your Discord Token
 GUILD_ID=Discord Server ID
 ABO_ROLE_ID=Subscription Role
 ADMIN_USER_ID=Admin Role
+```
 
 # commands (user):
+```
 /probeabo: self activated trial membership
 /guthaben: remaining subscription time
 /redeem [code]: redeem a subscription code, put codes in (codes.json)
+```
 
 # commands (admin):
+```
 /übersicht: overview of all subscriptions
 /addabo [monate]: adds x months of subscription to a member
-
+```
 
 
