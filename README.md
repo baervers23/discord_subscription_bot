@@ -25,7 +25,7 @@ codes, redeem
 ```
 git clone https://github.com/baervers23/discord_abo_bot.git
 pip3 install -r requirements.txt 
-Change the .env file.
+Create .env file in root dir.
 python3 main.py
 ```
 
