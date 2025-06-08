@@ -41,7 +41,7 @@ def mark_trial_used(user_id):
     conn.commit()
     conn.close()
 
-@tasks.loop(minutes=10)
+@tasks.loop(minutes=45)
 async def update_roles():
     guild = bot.get_guild(GUILD_ID)
     if not guild:
