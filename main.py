@@ -1,12 +1,11 @@
 import discord
 from discord.ext import commands, tasks
 from discord import app_commands
-from datetime import datetime, timedelta
+from datetime import datetime
 import os
 from dotenv import load_dotenv
-from database import init_db, add_abo, get_abo, use_trial, redeem_code, get_all_subscriptions, check_expirations
+from database import init_db, get_abo, redeem_code, get_all_subscriptions, check_expirations, add_subscription, get_connection, load_codes, save_codes, add_code_to_file
 from utils import format_time_left, send_reminder
-from database import add_subscription, get_connection
 
 load_dotenv()
 init_db()
@@ -88,7 +87,7 @@ async def probeabo(interaction: discord.Interaction):
     # Probeabo hinzufügen: 1 Monat = 30 Tage
     add_subscription(user_id, 1)
 
-    # Trial als benutzt markieren (funktion musst du definieren)
+    # Trial als benutzt markieren
     mark_trial_used(user_id)
 
     # Rolle hinzufügen
@@ -121,6 +120,41 @@ async def redeem(interaction: discord.Interaction, code: str):
         await interaction.followup.send(f"✅ Code eingelöst! Neues Ablaufdatum: {result.date()}")
     else:
         await interaction.followup.send(f"❌ {result}")
+
+@bot.tree.command(name="addcode", description="Fügt einen neuen Einlösecode hinzu")
+@app_commands.describe(code="Einmaliger Code (z. B. SUPERABO3M)", months="Gültigkeitsdauer in Monaten")
+async def addcode(interaction: discord.Interaction, code: str, months: int):
+    if interaction.user.id != ADMIN_USER_ID:
+        await interaction.response.send_message("🚫 Nur Admins dürfen Codes hinzufügen!", ephemeral=True)
+        return
+
+    code = code.upper()
+    success = add_code_to_file(code, months)
+
+    if success:
+        await interaction.response.send_message(f"✅ Code `{code}` mit `{months}` Monat(en) wurde gespeichert.", ephemeral=True)
+    else:
+        await interaction.response.send_message(f"⚠️ Der Code `{code}` existiert bereits!", ephemeral=True)
+
+@bot.tree.command(name="listcodes", description="Zeigt alle verfügbaren (nicht verwendeten) Einlösecodes")
+async def listcodes(interaction: discord.Interaction):
+    if interaction.user.id != ADMIN_USER_ID:
+        await interaction.response.send_message("🚫 Nur Admins dürfen Codes anzeigen!", ephemeral=True)
+        return
+
+    codes = load_codes()
+    unused = {k: v for k, v in codes.items() if not v.get("used", False)}
+
+    if not unused:
+        await interaction.response.send_message("❌ Keine verfügbaren Codes gefunden.", ephemeral=True)
+        return
+
+    message = "**📋 Verfügbare Codes:**\n"
+    for code, data in unused.items():
+        months = data.get("months", "?")
+        message += f"- `{code}` → {months} Monat(e)\n"
+
+    await interaction.response.send_message(message, ephemeral=True)
 
 @bot.tree.command(name="übersicht", description="Admin: Übersicht aller Subscriptions (nur für Admin)")
 async def uebersicht(interaction: discord.Interaction):

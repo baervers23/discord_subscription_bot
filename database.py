@@ -1,9 +1,10 @@
 import sqlite3
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
 import json
+import os
 
 DB_FILE = "subscriptions.db"
+CODES_FILE = "codes.json"
 
 def get_connection():
     return sqlite3.connect("subscriptions.db")  # Pfad zu deiner Datenbankdatei
@@ -18,13 +19,6 @@ def init_db():
             user_id INTEGER PRIMARY KEY,
             end_date TEXT,
             trial_used INTEGER DEFAULT 0
-        )
-    """)
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS codes (
-            code TEXT PRIMARY KEY,
-            duration_days INTEGER,
-            used_by INTEGER
         )
     """)
     conn.commit()
@@ -61,23 +55,7 @@ def add_subscription(user_id, months, trial=None):
 
     conn.commit()
     conn.close()
-
-def add_abo(user_id, months):
-    now = datetime.utcnow()
-    with sqlite3.connect(DB_FILE) as conn:
-        c = conn.cursor()
-        c.execute("SELECT end_date FROM subscriptrions WHERE user_id=?", (user_id,))
-        row = c.fetchone()
-        if row:
-            current = datetime.fromisoformat(row[0])
-            new_end = current if current > now else now
-            new_end += timedelta(days=30 * months)
-            c.execute("UPDATE subscriptions SET end_date=? WHERE user_id=?", (new_end.isoformat(), user_id))
-        else:
-            new_end = now + timedelta(days=30 * months)
-            c.execute("INSERT INTO subscriptions VALUES (?, ?, ?)", (user_id, new_end.isoformat(), 0))
-        conn.commit()
-        return new_end
+    return new_end_date
 
 def get_abo(user_id):
     with sqlite3.connect(DB_FILE) as conn:
@@ -104,7 +82,7 @@ def use_trial(user_id):
 
 def redeem_code(user_id, code):
     try:
-        with open("codes.json", "r+") as f:
+        with open(CODES_FILE, "r+") as f:
             data = json.load(f)
             if code not in data:
                 return "Ungültiger Code."
@@ -115,9 +93,32 @@ def redeem_code(user_id, code):
             f.seek(0)
             json.dump(data, f, indent=2)
             f.truncate()
-            return add_abo(user_id, months)
+            return add_subscription(user_id, months)
     except:
         return "Fehler beim Einlösen."
+
+def load_codes():
+    if not os.path.exists(CODES_FILE):
+        return {}
+    with open(CODES_FILE, "r") as f:
+        return json.load(f)
+
+def save_codes(codes):
+    with open(CODES_FILE, "w") as f:
+        json.dump(codes, f, indent=4)
+
+def add_code_to_file(code: str, months: int) -> bool:
+    codes = load_codes()
+    if code in codes:
+        return False  # Code existiert bereits
+
+    codes[code] = {
+        "months": months,
+        "used": False
+    }
+
+    save_codes(codes)
+    return True
 
 def get_all_subscriptions():
     conn = get_connection()

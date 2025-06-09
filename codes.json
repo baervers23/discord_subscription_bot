@@ -1,5 +1,14 @@
 {
-  "TESTCODE123": { "months": 1, "used": false },
-  "SUPERABO3M": { "months": 3, "used": false }
-  
+  "TESTCODE123": {
+    "months": 1,
+    "used": true
+  },
+  "SUPERABO3M": {
+    "months": 3,
+    "used": false
+  },
+  "ULTIMATECOD3": {
+    "months": 12,
+    "used": true
+  }
 }
