@@ -42,17 +42,17 @@ ADMIN_USER_ID=Admin Role
 
 # commands (user):
 ```
-/probeabo: self activated trial membership
-/guthaben: remaining subscription time
-/redeem [code]: redeem a subscription code, put codes in (codes.json)
+/probeabo - self activated trial membership
+/guthaben - remaining subscription time
+/redeem [code] - redeem a subscription code, put codes in (codes.json)
 ```
 
 # commands (admin):
 ```
-/übersicht: overview of all subscriptions
-/addabo [monate]: adds x months of subscription to a member
-/addcode [code] [monate]
-/listcodes
+/übersicht - overview of all subscriptions
+/addabo [months] - adds x months of subscription to a member
+/addcode [code] [months] - add a code called *userinput* for x months
+/listcodes - list all available codes 
 ```
 
 
