@@ -1,4 +1,4 @@
-# discord_abo_bot
+# Discord Subscription Bot - Managing premium membership for a specific role
 
 I created a discord bot for subscriptions, i use it for jellyfin together with a modified "membarr" bot.
 Member with Subscription automatically gets a specific role, this role will cooperate with my customized membarr bot which activates and deactivates jellyfin
