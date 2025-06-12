@@ -9,8 +9,6 @@ CODES_FILE = "codes.json"
 def get_connection():
     return sqlite3.connect("subscriptions.db")  # Pfad zu deiner Datenbankdatei
 
-
-
 def init_db():
     conn = get_connection()
     c = conn.cursor()
@@ -57,7 +55,7 @@ def add_subscription(user_id, months, trial=None):
     conn.close()
     return new_end_date
 
-def get_abo(user_id):
+def get_subscription(user_id):
     with sqlite3.connect(DB_FILE) as conn:
         c = conn.cursor()
         c.execute("SELECT end_date FROM subscriptions WHERE user_id=?", (user_id,))
@@ -140,21 +138,18 @@ def check_expirations():
             days_left = (end - now).days
             result.append((user_id, end, days_left))
         return result
+    
+def delete_subscription(user_id):
+    
+    # Hole DB-Verbindung & prüfe auf aktives Abo
+    sub = get_subscription(user_id)
+    if sub is None:
+        return "❌ Der Benutzer hat kein aktives Abo."
 
-def get_subscription_end(user_id: int):
-    conn = sqlite3.connect("subscriptions.db")
+    conn = get_connection()
     c = conn.cursor()
-    c.execute("SELECT end_date FROM subscriptions WHERE user_id = ?", (user_id,))
-    result = c.fetchone()
+    c.execute("DELETE FROM subscriptions WHERE user_id = ?", (user_id,))
+    conn.commit()
     conn.close()
-    if result:
-        return datetime.fromisoformat(result[0])
-    return None
 
-def get_all_subscriptions():
-    conn = sqlite3.connect("subscriptions.db")
-    c = conn.cursor()
-    c.execute("SELECT user_id, end_date FROM subscriptions")
-    data = c.fetchall()
-    conn.close()
-    return data
+    return "✅ Abo des gewünschten Benutzers gekündigt."

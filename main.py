@@ -4,7 +4,7 @@ from discord import app_commands
 from datetime import datetime
 import os
 from dotenv import load_dotenv
-from database import init_db, get_abo, redeem_code, get_all_subscriptions, check_expirations, add_subscription, get_connection, load_codes, save_codes, add_code_to_file
+from database import init_db, get_subscription, delete_subscription, redeem_code, get_all_subscriptions, check_expirations, add_subscription, get_connection, load_codes, save_codes, add_code_to_file
 from utils import format_time_left, send_reminder
 
 load_dotenv()
@@ -49,11 +49,24 @@ async def update_roles():
     abo_role = guild.get_role(ABO_ROLE_ID)
     if not abo_role:
         return
+    
+@tasks.loop(hours=24)
+async def run_expiration_checks():
+    await bot.wait_until_ready()
+    guild = bot.get_guild(GUILD_ID)
+    role = guild.get_role(ABO_ROLE_ID)
+    for user_id, end, delta in check_expirations():
+        member = guild.get_member(user_id)
+        if member and delta <= 0:
+            await member.remove_roles(role)
+        elif delta in [30, 7, 3]:
+            await send_reminder(member, delta)
 
     now = datetime.now()
     # Hole alle aktiven Subscriptions (user_id, end_date)
     active_subs = [uid for uid, end_date in get_all_subscriptions() if datetime.fromisoformat(end_date) > now]
-
+    abo_role = guild.get_role(ABO_ROLE_ID)
+    
     for member in guild.members:
         if member.bot:
             continue
@@ -63,17 +76,6 @@ async def update_roles():
         else:
             if abo_role in member.roles:
                 await member.remove_roles(abo_role, reason="Abo abgelaufen")
-
-@bot.tree.command(name="addabo", description="Fügt einem User ein Abo hinzu")
-@app_commands.describe(user="Benutzer auswählen", months="Abo-Dauer in Monaten")
-async def addabo(interaction: discord.Interaction, user: discord.Member, months: int):
-    if interaction.user.id != ADMIN_USER_ID:
-        await interaction.response.send_message("🚫 Nur für Admins!", ephemeral=True)
-        return
-    
-    
-    add_subscription(user.id, months)
-    await interaction.response.send_message(f"{user.mention} hat nun ein Abo für {months} Monat(e).", ephemeral=True)
 
 @bot.tree.command(name="probeabo", description="Gibt dir ein 30-tägiges Probeabo (einmalig)")
 async def probeabo(interaction: discord.Interaction):
@@ -100,41 +102,11 @@ async def probeabo(interaction: discord.Interaction):
     
 @bot.tree.command(name="guthaben", description="Zeigt dein aktuelles Guthaben")
 async def guthaben(interaction: discord.Interaction):
-    abo = get_abo(interaction.user.id)
+    abo = get_subscription(interaction.user.id)
     if abo:
         await interaction.response.send_message(f"📅 Dein Abo läuft noch bis zum {abo.date()} ({format_time_left(abo)} verbleibend).", ephemeral=True)
     else:
         await interaction.response.send_message("❌ Du hast derzeit kein aktives Abo.", ephemeral=True)
-
-@bot.tree.command(name="redeem", description="Geschenkkarte einlösen")
-@app_commands.describe(code="Dein Geschenkcode")
-async def redeem(interaction: discord.Interaction, code: str):
-    await interaction.response.defer(ephemeral=True)
-    result = redeem_code(interaction.user.id, code)
-    if isinstance(result, datetime):
-        guild = bot.get_guild(GUILD_ID)
-        member = guild.get_member(interaction.user.id)
-        role = guild.get_role(ABO_ROLE_ID)
-        if role:
-            await member.add_roles(role)
-        await interaction.followup.send(f"✅ Code eingelöst! Neues Ablaufdatum: {result.date()}")
-    else:
-        await interaction.followup.send(f"❌ {result}")
-
-@bot.tree.command(name="addcode", description="Fügt einen neuen Einlösecode hinzu")
-@app_commands.describe(code="Einmaliger Code (z. B. SUPERABO3M)", months="Gültigkeitsdauer in Monaten")
-async def addcode(interaction: discord.Interaction, code: str, months: int):
-    if interaction.user.id != ADMIN_USER_ID:
-        await interaction.response.send_message("🚫 Nur Admins dürfen Codes hinzufügen!", ephemeral=True)
-        return
-
-    code = code.upper()
-    success = add_code_to_file(code, months)
-
-    if success:
-        await interaction.response.send_message(f"✅ Code `{code}` mit `{months}` Monat(en) wurde gespeichert.", ephemeral=True)
-    else:
-        await interaction.response.send_message(f"⚠️ Der Code `{code}` existiert bereits!", ephemeral=True)
 
 @bot.tree.command(name="listcodes", description="Zeigt alle verfügbaren (nicht verwendeten) Einlösecodes")
 async def listcodes(interaction: discord.Interaction):
@@ -174,18 +146,56 @@ async def uebersicht(interaction: discord.Interaction):
         msg += f"\n<@{user_id}> – endet am {end_dt.date()} ({left})"
 
     await interaction.response.send_message(msg, ephemeral=True)
+    
+@bot.tree.command(name="addabo", description="Fügt einem User ein Abo hinzu")
+@app_commands.describe(user="Benutzer auswählen", months="Abo-Dauer in Monaten")
+async def addabo(interaction: discord.Interaction, user: discord.Member, months: int):
+    if interaction.user.id != ADMIN_USER_ID:
+        await interaction.response.send_message("🚫 Nur für Admins!", ephemeral=True)
+        return
+    
+    add_subscription(user.id, months)
+    await interaction.response.send_message(f"{user.mention} hat nun ein Abo für {months} Monat(e).", ephemeral=True)
 
-@tasks.loop(hours=24)
-async def run_expiration_checks():
-    await bot.wait_until_ready()
-    guild = bot.get_guild(GUILD_ID)
-    role = guild.get_role(ABO_ROLE_ID)
-    for user_id, end, delta in check_expirations():
-        member = guild.get_member(user_id)
-        if member and delta <= 0:
-            await member.remove_roles(role)
-        elif delta in [30, 7, 3]:
-            await send_reminder(member, delta)
+@bot.tree.command(name="redeem", description="Geschenkkarte einlösen")
+@app_commands.describe(code="Dein Geschenkcode")
+async def redeem(interaction: discord.Interaction, code: str):
+    await interaction.response.defer(ephemeral=True)
+    result = redeem_code(interaction.user.id, code)
+    if isinstance(result, datetime):
+        guild = bot.get_guild(GUILD_ID)
+        member = guild.get_member(interaction.user.id)
+        role = guild.get_role(ABO_ROLE_ID)
+        if role:
+            await member.add_roles(role)
+        await interaction.followup.send(f"✅ Code eingelöst! Neues Ablaufdatum: {result.date()}")
+    else:
+        await interaction.followup.send(f"❌ {result}")
+
+@bot.tree.command(name="addcode", description="Fügt einen neuen Einlösecode hinzu")
+@app_commands.describe(code="Einmaliger Code (z. B. SUPERABO3M)", months="Gültigkeitsdauer in Monaten")
+async def addcode(interaction: discord.Interaction, code: str, months: int):
+    if interaction.user.id != ADMIN_USER_ID:
+        await interaction.response.send_message("🚫 Nur Admins dürfen Codes hinzufügen!", ephemeral=True)
+        return
+
+    code = code.upper()
+    success = add_code_to_file(code, months)
+
+    if success:
+        await interaction.response.send_message(f"✅ Code `{code}` mit `{months}` Monat(en) wurde gespeichert.", ephemeral=True)
+    else:
+        await interaction.response.send_message(f"⚠️ Der Code `{code}` existiert bereits!", ephemeral=True) 
+   
+@bot.tree.command(name="cancelabo", description="Kündigt das Abo des ausgewählten Benutzer und entfernt die Rolle.")
+@app_commands.describe(user="Benutzer auswählen")
+async def cancelabo(interaction: discord.Interaction, user: discord.Member):
+    if interaction.user.id != ADMIN_USER_ID:
+        await interaction.response.send_message("🚫 Nur für Admins!", ephemeral=True)
+        return
+    
+    delete_subscription(user.id)
+    await interaction.response.send_message(f"✅ Das Abo von {user.mention} wurde erfolgreich gekündigt", ephemeral=True)
 
 @bot.event
 async def on_ready():

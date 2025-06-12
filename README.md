@@ -50,6 +50,7 @@ ADMIN_USER_ID=Admin Role
 ```
 /übersicht - overview of all subscriptions
 /addabo [months] - adds x months of subscription to a member
+/cancelabo [user] - removes subscription from user
 /addcode [code] [months] - add a code called *userinput* for x months
 /listcodes - list all available codes 
 ```
