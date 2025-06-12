@@ -39,16 +39,6 @@ def mark_trial_used(user_id):
     c.execute("UPDATE subscriptions SET trial_used = 1 WHERE user_id = ?", (user_id,))
     conn.commit()
     conn.close()
-
-@tasks.loop(minutes=45)
-async def update_roles():
-    guild = bot.get_guild(GUILD_ID)
-    if not guild:
-        return
-
-    abo_role = guild.get_role(ABO_ROLE_ID)
-    if not abo_role:
-        return
     
 @tasks.loop(hours=24)
 async def run_expiration_checks():
@@ -202,7 +192,6 @@ async def on_ready():
     run_expiration_checks.start()
     print(f"Bot ist eingeloggt als {bot.user}")
     await bot.tree.sync()
-    update_roles.start() 
     print(f"✅ Slash-Befehle synchronisiert: {[cmd.name for cmd in bot.tree.get_commands()]}")
 
 bot.run(TOKEN)
