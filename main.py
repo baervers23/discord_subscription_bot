@@ -11,7 +11,7 @@ load_dotenv()
 init_db()
 
 ABO_ROLE_ID = int(os.getenv("ABO_ROLE_ID"))
-TOKEN = os.getenv("DISCORD_TOKEN")
+TOKEN = int(os.getenv("DISCORD_TOKEN"))
 GUILD_ID = int(os.getenv("GUILD_ID"))
 ADMIN_USER_ID = int(os.getenv("ADMIN_USER_ID"))
 
@@ -19,26 +19,6 @@ intents = discord.Intents.default()
 intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
-
-
-
-
-def trial_already_used(user_id):
-    conn = get_connection()
-    c = conn.cursor()
-    c.execute("SELECT trial_used FROM subscriptions WHERE user_id = ?", (user_id,))
-    row = c.fetchone()
-    conn.close()
-    if row is None:
-        return False  # User hat kein Abo, also auch kein Trial genutzt
-    return row[0] == 1  # trial_used == 1 bedeutet Trial schon genutzt
-
-def mark_trial_used(user_id):
-    conn = get_connection()
-    c = conn.cursor()
-    c.execute("UPDATE subscriptions SET trial_used = 1 WHERE user_id = ?", (user_id,))
-    conn.commit()
-    conn.close()
     
 @tasks.loop(hours=24)
 async def run_expiration_checks():
@@ -66,6 +46,23 @@ async def run_expiration_checks():
         else:
             if abo_role in member.roles:
                 await member.remove_roles(abo_role, reason="Abo abgelaufen")
+
+def trial_already_used(user_id):
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute("SELECT trial_used FROM subscriptions WHERE user_id = ?", (user_id,))
+    row = c.fetchone()
+    conn.close()
+    if row is None:
+        return False  # User hat kein Abo, also auch kein Trial genutzt
+    return row[0] == 1  # trial_used == 1 bedeutet Trial schon genutzt
+
+def mark_trial_used(user_id):
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute("UPDATE subscriptions SET trial_used = 1 WHERE user_id = ?", (user_id,))
+    conn.commit()
+    conn.close()
 
 @bot.tree.command(name="probeabo", description="Gibt dir ein 30-tägiges Probeabo (einmalig)")
 async def probeabo(interaction: discord.Interaction):
@@ -176,7 +173,7 @@ async def addcode(interaction: discord.Interaction, code: str, months: int):
         await interaction.response.send_message(f"✅ Code `{code}` mit `{months}` Monat(en) wurde gespeichert.", ephemeral=True)
     else:
         await interaction.response.send_message(f"⚠️ Der Code `{code}` existiert bereits!", ephemeral=True) 
-   
+
 @bot.tree.command(name="cancelabo", description="Kündigt das Abo des ausgewählten Benutzer und entfernt die Rolle.")
 @app_commands.describe(user="Benutzer auswählen")
 async def cancelabo(interaction: discord.Interaction, user: discord.Member):
