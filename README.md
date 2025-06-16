@@ -12,7 +12,7 @@ At the moment the bot is programmed in German and the commands in English, if ne
 
 # Functions:
 ```
-timebased role management - bot give the role while subscription is active and take the role when the subscription expires
+timebased role management - bot assigns/removes the role depending on whether the subscription is active or expired
 gift card system - add custom codes like for example a netflix giftcard
 trial membership - let the user start a trial month per slash command
 reminder - reminds a user at 30/7/3 days before his subscription expires
