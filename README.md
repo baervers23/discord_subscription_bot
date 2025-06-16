@@ -1,14 +1,24 @@
 # Discord Subscription/Abonnement Bot
 
-I created a discord bot for subscriptions, i use it for jellyfin together with a modified "membarr" bot.
-Member with Subscription automatically gets a specific role, this role will cooperate with my customized membarr bot which activates and deactivates jellyfin
+A Discord Bot with the purpose of managing “Premium Memberships” via time-based Discord Roles.
 
-at the moment the bot answers in german, i translate it when i finish developing
+The bot is useful for various purposes and communities so I share it as a standalone bot
+
+I use it together with a modified membarr-bot in Jellyfin. The subscription bot takes care of everything concerning the membership and the modified membarr-bot takes care of the account creation as well as the deactivation and activation of the users. 
+
+I will soon upload the modified membarr-bot to github and link it here
+
+At the moment the bot is programmed in German and the commands in English, if necessary you have to translate it yourself.
+
+Translated with DeepL.com (free version)
 
 # Working
 ```
-subscription management with automatic role(timebased)
-gift card system
+timebased role management - bot give the role while subscription is active and take the role when the subscription expires
+gift card system - add custom codes like for example a netflix giftcard
+trial membership - let the user start a trial month per slash command
+reminder - reminds a user at 30/7/3 days before his subscription expires
+manual admin commands & user commands (see below)
 ```
 
 # Create a Discord Bot
@@ -27,7 +37,7 @@ gift card system
 ```
 git clone https://github.com/baervers23/discord_abo_bot.git
 pip3 install -r requirements.txt 
-Create .env file in root dir.
+edit .env file in root dir.
 python3 main.py
 ```
 
@@ -35,15 +45,15 @@ python3 main.py
 ```
 DISCORD_TOKEN=Your Discord Token
 GUILD_ID=Discord Server ID
-ABO_ROLE_ID=Subscription Role
-ADMIN_USER_ID=Admin Role
+ABO_ROLE_ID=Subscription Role ID
+ADMIN_USER_ID=Admin Role ID
 ```
 
 # commands (user):
 ```
 /probeabo - self activated trial membership
 /guthaben - remaining subscription time
-/redeem [code] - redeem a subscription code, put codes in (codes.json)
+/redeem [code] - redeem a subscription code from the codes.json file
 ```
 
 # commands (admin):
