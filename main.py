@@ -144,7 +144,7 @@ async def addabo(interaction: discord.Interaction, user: discord.Member, months:
     add_subscription(user.id, months)
     await interaction.response.send_message(f"{user.mention} hat nun ein Abo für {months} Monat(e).", ephemeral=True)
 
-@bot.tree.command(name="redeem", description="Geschenkkarte einlösen")
+@bot.tree.command(name="einlösen", description="Geschenkkarte einlösen")
 @app_commands.describe(code="Dein Geschenkcode")
 async def redeem(interaction: discord.Interaction, code: str):
     await interaction.response.defer(ephemeral=True)
