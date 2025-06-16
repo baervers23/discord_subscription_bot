@@ -31,15 +31,7 @@ manual admin commands & user commands (see below)
  9) Under Scopes, check 'bot' and applications.commands
 10) Copy the 'Generated URL' and paste into your browser and add it to your discord server from Step 1.
 
-# Installation
-```
-git clone https://github.com/baervers23/discord_abo_bot.git
-pip3 install -r requirements.txt 
-edit .env file in root dir.
-python3 main.py
-```
-
-# .env
+# .env (config file)
 ```
 DISCORD_TOKEN=Your Discord Token
 GUILD_ID=Discord Server ID
@@ -47,11 +39,31 @@ ABO_ROLE_ID=Subscription Role ID
 ADMIN_USER_ID=Admin Role ID
 ```
 
+# Installation & run
+```
+git clone https://github.com/baervers23/discord_subscription_bot.git
+cd discord_subscription_bot
+pip3 install -r requirements.txt 
+edit .env file in root dir.
+python3 main.py
+```
+
+# Installation with venv & run
+```
+git clone https://github.com/baervers23/discord_subscription_bot.git
+cd discord_subscription_bot
+python3 -m venv <DIR>
+source <DIR>/bin/activate
+pip3 install -r requirements.txt 
+edit .env file in root dir.
+python3 main.py
+```
+
 # commands (user):
 ```
 /probeabo - self activated trial membership
 /guthaben - remaining subscription time
-/redeem [code] - redeem a subscription code from the codes.json file
+/einlösen [code] - redeem a subscription code from the codes.json file
 ```
 
 # commands (admin):
