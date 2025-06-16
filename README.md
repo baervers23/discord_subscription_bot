@@ -10,9 +10,7 @@ I will soon upload the modified membarr-bot to github and link it here
 
 At the moment the bot is programmed in German and the commands in English, if necessary you have to translate it yourself.
 
-Translated with DeepL.com (free version)
-
-# Working
+# Functions:
 ```
 timebased role management - bot give the role while subscription is active and take the role when the subscription expires
 gift card system - add custom codes like for example a netflix giftcard
@@ -64,5 +62,3 @@ ADMIN_USER_ID=Admin Role ID
 /addcode [code] [months] - add a code called *userinput* for x months
 /listcodes - list all available codes 
 ```
-
-
