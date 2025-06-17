@@ -18,6 +18,7 @@ trial membership - let the user start a trial month per slash command
 reminder - reminds a user at 30/7/3 days before his subscription expires
 manual admin commands & user commands (see below)
 ```
+![Functions](img/1.png)
 
 # Create a Discord Bot
  1) Create the discord server that your users will get member roles or use an existing discord that you can assign roles from
@@ -74,3 +75,5 @@ python3 main.py
 /addcode [code] [months] - add a code called *userinput* for x months
 /listcodes - list all available codes 
 ```
+
+![commands](img/3.png)
