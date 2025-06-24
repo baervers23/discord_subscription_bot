@@ -11,7 +11,7 @@ load_dotenv()
 init_db()
 
 ABO_ROLE_ID = int(os.getenv("ABO_ROLE_ID"))
-TOKEN = int(os.getenv("DISCORD_TOKEN"))
+TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_ID = int(os.getenv("GUILD_ID"))
 ADMIN_USER_ID = int(os.getenv("ADMIN_USER_ID"))
 
